@@ -38,14 +38,15 @@ module.exports = {
         this.addStatusWithoutNewline('WSS发送消息：');
         this.addStatus(JSON.stringify(message));
       }
-
-      let socket = this.sockets[socketIndex];
-      
-      socket.send(json2buffer(message));
-
-      //监听回应
-      if (socket.timeout) {
-        clearTimeout(socket.timeout);
+      let _socket = socket || this.sockets[0];
+      if (_socket) {
+        _socket.send(json2buffer(message));
+        if (_socket.timeout) {
+          clearTimeout(_socket.timeout);
+        }
+        _socket.timeout = setTimeout(() => {
+          this.notify("操作过于频繁，请稍后再查询");
+        },_socket.opts.maxTimeout);
       }
       socket.timeout = setTimeout(() => {
         this.notify("操作过于频繁，请稍后再查询");
